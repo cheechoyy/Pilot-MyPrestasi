@@ -5,7 +5,30 @@ from admin_view import show_admin_dashboard, show_staff_dashboard
 
 # 1. Konfigurasi Halaman
 st.set_page_config(page_title="MyPrestasi HPU", layout="wide")
-
+# --- Tambah di sini (Baris 8) ---
+def apply_saas_theme():
+    st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        html, body, [class*="css"]  { font-family: 'Inter', sans-serif; }
+        
+        /* Kad Metrik SaaS */
+        [data-testid="stMetric"] {
+            background-color: #ffffff;
+            border: 1px solid #eef2f6;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.02);
+        }
+        
+        /* Butang Moden */
+        .stButton > button {
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 # 2. CSS Global
 st.markdown("""
     <style>
@@ -37,6 +60,8 @@ if "doctor_list" not in st.session_state:
     st.session_state["doctor_list"] = None 
 if "selected_doctor" not in st.session_state:
     st.session_state["selected_doctor"] = None
+
+apply_saas_theme()
 
 # --- EXECUTION ROUTING ---
 if not st.session_state["logged_in"]:
