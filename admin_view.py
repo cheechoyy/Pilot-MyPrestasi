@@ -26,9 +26,10 @@ def show_admin_dashboard():
     # --- SIDEBAR ---
     with st.sidebar:
         st.markdown('<div class="user-avatar">👤</div>', unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center;'><b>Admin HPU</b></p>", unsafe_allow_html=True)
+
+        st.markdown("<p style='text-align:center;'><b>Admin HPU</b><br><small>Head of Department</small></p>", unsafe_allow_html=True)
         st.divider()
-        
+     
         st.write("**Navigasi Pintas Modul**")
         if st.button("🔴 Clinical Excellence", width="stretch"):
             st.session_state["selected_view"] = "Clinical Excellence"
@@ -66,23 +67,35 @@ def show_admin_dashboard():
         show_operational_page()
     elif view in interpersonal_views:
         show_interpersonal_page()
+    
     elif st.session_state["selected_doctor"]:
-        st.title(f"🔍 Profil Individu: {st.session_state['selected_doctor']}")
+        # SEMUA KOD DI BAWAH INI MESTI MASUK KE DALAM (1 TAB)
+        col_prof, col_prog = st.columns([1, 1])
+        with col_prof:
+            st.title(f"🔍 Profil: {st.session_state['selected_doctor']}")
+            st.caption("Jabatan: Kecemasan | ID: HPU-9921 | Penilaian Terakhir: 15 Jan 2026")
+    
+        # Bahagian ini sekarang sudah masuk ke dalam blok 'elif'
+        with col_prog:
+            st.write("")
+            st.progress(0.75, text="Kemajuan Borang Penilaian: 75%")
+        
         st.info("Gunakan butang 'Kembali ke Dashboard' di sidebar untuk menukar data.")
+
     else:
-        # --- DASHBOARD UTAMA ---
-        st.title("📊 DASHBOARD MYPRESTASI")
+        # SEMUA KOD DASHBOARD JUGA MESTI MASUK KE DALAM (1 TAB)
+        st.title("📊 DASHBOARD MYPRESTASI") 
         st.markdown("<p style='color: #666; font-size: 1.1rem; margin-top: -15px;'>Pemantauan Fasiliti Kesihatan Negeri Selangor</p>", unsafe_allow_html=True)
 
-        m1, m2, m3 = st.columns(3)
+        # Barisan Metrik
+        m1, m2, m3, m4 = st.columns(4)
         with m1:
-            with st.container(border=True): st.metric("Clinical Performance", "80%", "Sasaran: 80%")
-        with m2:
-            with st.container(border=True): st.metric("Operational Output", "1,240", "Target: >100")
-        with m3:
-            with st.container(border=True): st.metric("Interpersonal Rating", "High", "PSQ18")
+            with st.container(border=True): st.metric("Clinical Avg.", "82%", "+2.1%")
+        # ... sambung kod m2, m3, m4 anda ...
         
+    
         st.write("")
+       
 
         col_chart, col_map, col_list = st.columns([1.3, 1.6, 1.1], gap="medium")
 
@@ -144,6 +157,57 @@ def show_admin_dashboard():
                         st.rerun()
                 else:
                     st.info("Sila klik lokasi pada peta.")
+        # --- BAHAGIAN BAWAH: IDEA 3 & 5 (HEATMAP & AUDIT LOG) ---
+        st.write("") # Ruang kosong tambahan
+        
+        # Pecahan ruang 70% untuk Heatmap, 30% untuk Log Audit
+        col_heat, col_audit = st.columns([2, 1], gap="large")
+
+        with col_heat:
+            with st.container(border=True):
+                # Idea 3: Heatmap Kompetensi Jabatan (HOD Insight)
+                st.markdown("#### 📊 Matriks Kompetensi Jabatan (HOD Insight)")
+                
+                # Simulasi data heatmap untuk 5 doktor dan 4 kategori
+                hm_data = [
+                    [85, 90, 70, 95], # Dr. Raju
+                    [60, 85, 80, 75], # Dr. Siti
+                    [90, 75, 85, 90], # Dr. Lim
+                    [70, 80, 90, 85], # Dr. Ahmad
+                    [88, 92, 78, 95]  # Dr. Sarah
+                ]
+                
+                fig_hm = px.imshow(
+                    hm_data,
+                    labels=dict(x="Kategori Penilaian", y="Nama Pegawai", color="Skor"),
+                    x=['Clinical', 'Operational', 'Interpersonal', 'Compliance'],
+                    y=['Dr. Raju', 'Dr. Siti', 'Dr. Lim', 'Dr. Ahmad', 'Dr. Sarah'],
+                    color_continuous_scale='RdYlGn', # Merah-Kuning-Hijau
+                    text_auto=True # Papar markah terus pada kotak
+                )
+                
+                fig_hm.update_layout(height=320, margin=dict(t=10, b=10, l=10, r=10))
+                st.plotly_chart(fig_hm, use_container_width=True)
+
+        with col_audit:
+            with st.container(border=True):
+                # Idea 5: Audit Trail & Change Logs
+                st.markdown("#### 📑 Log Aktiviti Admin")
+                st.caption("Rekod kemaskini penilaian terbaru")
+                
+                # Menggunakan markdown untuk paparan log yang kemas
+                st.markdown("""
+                <div style="font-size: 0.85rem; line-height: 1.6;">
+                    <p>🕒 <b>09:45 AM</b>: Skor <i>Knowledge</i> Dr. Raju disahkan oleh HOD.</p>
+                    <p>🕒 <b>08:20 AM</b>: Admin memuat naik sijil CPD Dr. Siti.</p>
+                    <p>🕒 <b>Semalam</b>: Laporan bulanan ED Selangor dijana.</p>
+                    <p>🕒 <b>19 Feb</b>: Profil Dr. Lim dikemas kini.</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.write("")
+                if st.button("Lihat Semua Log", use_container_width=True, key="btn_audit_full"):
+                    st.info("Arkib log audit akan dipaparkan dalam tetingkap baru.")
 
     # --- PENAMBAHAN FOOTER GLOBAL ---
     st.markdown("""
