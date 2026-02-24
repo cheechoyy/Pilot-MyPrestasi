@@ -1,6 +1,8 @@
 import streamlit as st
 from login_view import show_login_page
-from admin_view import show_admin_dashboard, show_staff_dashboard
+from admin_view import show_admin_dashboard
+from staff_view import show_staff_dashboard
+
 
 
 # 1. Konfigurasi Halaman
