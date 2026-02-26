@@ -3,54 +3,54 @@ import pandas as pd
 from datetime import date
 import plotly.express as px
 
-# --- IMPORT FUNGSI DARI FAIL MODUL ---
-# Kita kekalkan operational dan interpersonal buat masa ini
+# --- IMPORT MODULE FUNCTIONS ---
+# Keeping operational and interpersonal for now
 from operational_view import show_operational_page
 from interpersonal_view import show_interpersonal_page
 
 # =====================================================================
-# --- FUNGSI BORANG KLINIKAL KHAS UNTUK STAF ---
+# --- STAFF SPECIFIC CLINICAL FORM FUNCTION ---
 # =====================================================================
 def show_staff_clinical_update():
-    st.markdown("<h2 style='color:#2b3674;'>🩺 Kemas Kini Data: Clinical Excellence</h2>", unsafe_allow_html=True)
-    st.info("Sila masukkan rekod prosedur, aktiviti CPD, dan audit dokumentasi anda. Data ini akan dihantar kepada HOD untuk pengesahan.")
+    st.markdown("<h2 style='color:#2b3674;'>🩺 Update Data: Clinical Excellence</h2>", unsafe_allow_html=True)
+    st.info("Please enter your procedure records, CPD activities, and documentation audit. This data will be sent to the HOD for verification.")
 
-    # 1. Identiti Statik (Auto-detect siapa yang login)
+    # 1. Static Identity (Auto-detect logged-in user)
     st.markdown("""
         <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #2ecc71; margin-bottom: 20px;'>
-            <strong>Nama Pegawai:</strong> Dr. Portal (Log Masuk Semasa)<br>
-            <strong>Jabatan:</strong> Pesakit Luar
+            <strong>Officer Name:</strong> Dr. Portal (Current Login)<br>
+            <strong>Department:</strong> Outpatient
         </div>
     """, unsafe_allow_html=True)
 
-    # 2. Tabs untuk kategori pengisian berbeza
-    tab1, tab2, tab3, tab4 = st.tabs(["🛠️ Log Prosedur (Skills)", "📚 Tuntutan CPD (Knowledge)", "📝 Audit Dokumentasi", "📜 Deklarasi Polisi"])
+    # 2. Tabs for different entry categories
+    tab1, tab2, tab3, tab4 = st.tabs(["🛠️ Procedure Log (Skills)", "📚 CPD Claim (Knowledge)", "📝 Documentation Audit", "📜 Policy Declaration"])
 
-    # --- TAB 1: KEMAHIRAN (LOG PROSEDUR) ---
+    # --- TAB 1: SKILLS (PROCEDURE LOG) ---
     with tab1:
-        st.markdown("### Tambah Log Prosedur Klinikal")
+        st.markdown("### Add Clinical Procedure Log")
         with st.form("form_skills", clear_on_submit=True):
             c1, c2 = st.columns(2)
-            tarikh = c1.date_input("Tarikh Prosedur")
-            jenis = c2.selectbox("Jenis Prosedur", ["Intubation", "Central Line Insertion", "Chest Tube", "Appendectomy", "Lain-lain"])
+            tarikh = c1.date_input("Procedure Date")
+            jenis = c2.selectbox("Procedure Type", ["Intubation", "Central Line Insertion", "Chest Tube", "Appendectomy", "Others"])
             
             c3, c4 = st.columns(2)
-            komplikasi = c3.radio("Adakah terdapat komplikasi?", ["Tidak", "Ya"], horizontal=True)
-            peranan = c4.selectbox("Peranan Anda", ["Primary Surgeon / Operator", "First Assistant", "Observer"])
+            komplikasi = c3.radio("Were there any complications?", ["No", "Yes"], horizontal=True)
+            peranan = c4.selectbox("Your Role", ["Primary Surgeon / Operator", "First Assistant", "Observer"])
             
-            nota = st.text_area("Catatan Tambahan / Pembelajaran (Pilihan)")
+            nota = st.text_area("Additional Notes / Learning Points (Optional)")
             
-            submitted = st.form_submit_button("Hantar Log Prosedur", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("Submit Procedure Log", type="primary", use_container_width=True)
             if submitted:
-                st.success("✅ Log prosedur berjaya dihantar dan menanti pengesahan HOD.")
+                st.success("✅ Procedure log successfully submitted and pending HOD verification.")
 
-    # --- TAB 2: PENGETAHUAN (CPD) ---
+    # --- TAB 2: KNOWLEDGE (CPD) ---
     with tab2:
-        st.markdown("### Tuntutan Mata CPD / CME")
+        st.markdown("### CPD / CME Points Claim")
         with st.form("form_cpd", clear_on_submit=True):
-            tajuk = st.text_input("Tajuk Program / Kursus")
+            tajuk = st.text_input("Program / Course Title")
             
-            # Senarai penuh berdasarkan borang log CPD standard
+            # Full list based on standard CPD log form
             senarai_kategori_cpd = [
                 "A1 - SCIENTIFIC MEETINGS/CONGRESS",
                 "A2 - WORKSHOPS/COURSES/SKILL COURSES INCLUDING ATLS/CCRISP/CPR...",
@@ -71,169 +71,265 @@ def show_staff_clinical_update():
                 "DC - EXTERNAL LECTURE/ TOPIC SEMINAR (PER HOUR)",
                 "E - PROFESSIONAL DEVELOPMENT"
             ]
-            kategori = st.selectbox("Kategori CPD", senarai_kategori_cpd)
+            kategori = st.selectbox("CPD Category", senarai_kategori_cpd)
             
             c1, c2, c3 = st.columns(3)
-            mula = c1.date_input("Tarikh Mula")
-            tamat = c2.date_input("Tarikh Tamat")
-            mata = c3.number_input("Mata CPD Dituntut", min_value=0, step=1)
+            mula = c1.date_input("Start Date")
+            tamat = c2.date_input("End Date")
+            mata = c3.number_input("CPD Points Claimed", min_value=0, step=1)
             
-            sijil = st.file_uploader("Muat Naik Sijil/Bukti (PDF/JPG)", type=['pdf', 'jpg', 'png'])
+            sijil = st.file_uploader("Upload Certificate/Proof (PDF/JPG)", type=['pdf', 'jpg', 'png'])
             
-            sub_cpd = st.form_submit_button("Hantar Tuntutan CPD", type="primary", use_container_width=True)
+            sub_cpd = st.form_submit_button("Submit CPD Claim", type="primary", use_container_width=True)
             if sub_cpd:
                 if tajuk == "":
-                    st.error("Sila masukkan tajuk program.")
+                    st.error("Please enter the program title.")
                 else:
-                    st.success(f"✅ Tuntutan sebanyak {mata} mata CPD untuk '{tajuk}' telah dihantar ke sistem HPU.")
+                    st.success(f"✅ Claim of {mata} CPD points for '{tajuk}' has been submitted to the HPU system.")
 
-    # --- TAB 3: DOKUMENTASI ---
+    # --- TAB 3: DOCUMENTATION (UPDATED WITH TIMELINESS METRIC) ---
     with tab3:
-        st.markdown("### Laporan Audit Dokumentasi Kendiri (Bulanan)")
-        with st.form("form_doc"):
-            bulan = st.selectbox("Bulan Laporan", ["Januari", "Februari", "Mac", "April"])
+        st.markdown("### 📝 Clinical Documentation Form (Timeliness)")
+        st.write("Please record the status of your patient notes entry here for Department monitoring.")
+        
+        with st.form("doc_entry_form", clear_on_submit=True):
+            col1, col2 = st.columns(2)
             
-            st.write("Berdasarkan semakan rawak 10 fail pesakit anda bulan ini:")
-            c1, c2 = st.columns(2)
-            jum_kes = c1.number_input("Jumlah Fail Disemak", value=10, min_value=1)
-            siap_24j = c2.number_input("Fail dengan Ringkasan Discaj (Discharge Summary) disiapkan < 24 jam", value=0, min_value=0, max_value=100)
+            with col1:
+                patient_id = st.text_input("Patient ID / RN", placeholder="e.g.: RN123456")
+                doc_type = st.selectbox("Documentation Type", ["Admission Note", "Progress Note", "Discharge Summary"])
+                
+            with col2:
+                # Staff selects their status
+                status = st.radio("Entry Status (Target: < 4 hours)", 
+                                  ["On-time", "Delayed", "Overdue"], 
+                                  horizontal=True)
+                completion_time = st.number_input("Estimated Completion Time (Hours)", min_value=0.5, step=0.5, value=1.0)
+                
+            # Reason field mandatory if delayed
+            reason = st.text_area("Reason for Delay (Mandatory if 'Delayed' or 'Overdue')", 
+                                  placeholder="State the reason for delay (e.g.: Involved with emergency case in Red Zone)...")
             
-            sub_doc = st.form_submit_button("Hantar Laporan Audit", type="primary", use_container_width=True)
-            if sub_doc:
-                if jum_kes > 0:
-                    peratus = (siap_24j / jum_kes) * 100
-                    st.success(f"✅ Audit dihantar! Pematuhan dokumentasi anda: **{peratus:.1f}%**")
+            submitted = st.form_submit_button("Save Documentation Record", type="primary", use_container_width=True)
+            
+            if submitted:
+                if not patient_id:
+                    st.error("Please enter Patient ID / RN.")
+                elif status in ["Delayed", "Overdue"] and not reason:
+                    st.warning("⚠️ Please state the reason for delay for HOD audit purposes.")
+                else:
+                    st.success(f"✅ Documentation record for patient {patient_id} successfully submitted to the database.")
 
-    # --- TAB 4: POLISI & PROTOKOL ---
+    # --- TAB 4: POLICIES & PROTOCOLS ---
     with tab4:
-        st.markdown("### Deklarasi & Pematuhan SOP")
-        st.info("Sila baca dan sahkan pematuhan anda terhadap polisi terkini fasiliti. Pengesahan ini akan direkodkan sebagai bukti pematuhan (compliance).")
+        st.markdown("### SOP Declaration & Compliance")
+        st.info("Please read and confirm your compliance with the latest facility policies. This confirmation will be recorded as proof of compliance.")
         
         with st.container(border=True):
-            p1 = st.checkbox("Saya telah membaca dan memahami **Garis Panduan Kawalan Infeksi 2026**.")
-            p2 = st.checkbox("Saya telah mengemas kini **Sijil BLS/ALS** tahunan saya dan melampirkan salinan kepada Unit Latihan.")
-            p3 = st.checkbox("Saya akur dengan **Polisi Kerahsiaan Pesakit (PDPA)** terkini fasiliti.")
+            p1 = st.checkbox("I have read and understood the **Infection Control Guidelines 2026**.")
+            p2 = st.checkbox("I have updated my annual **BLS/ALS Certificate** and attached a copy to the Training Unit.")
+            p3 = st.checkbox("I acknowledge the latest **Patient Confidentiality Policy (PDPA)** of the facility.")
             
-        if st.button("Sahkan Deklarasi", type="primary", use_container_width=True):
+        if st.button("Confirm Declaration", type="primary", use_container_width=True):
             if p1 and p2 and p3:
-                st.success("✅ Deklarasi pematuhan anda telah direkodkan ke dalam pangkalan data.")
+                st.success("✅ Your compliance declaration has been recorded in the database.")
             else:
-                st.error("Sila tanda (tick) pada semua kotak untuk mengesahkan deklarasi anda.")
+                st.error("Please tick all boxes to confirm your declaration.")
 
 # =====================================================================
-# --- FUNGSI BORANG OPERATIONAL KHAS UNTUK STAF ---
+# --- STAFF SPECIFIC OPERATIONAL FORM FUNCTION ---
 # =====================================================================
 def show_staff_operational_update():
-    st.markdown("<h2 style='color:#2b3674;'>⚙️ Kemas Kini Data: Operational Excellence</h2>", unsafe_allow_html=True)
-    st.info("Sila masukkan rekod produktiviti harian dan laporan inovasi anda.")
+    st.markdown("<h2 style='color:#2b3674;'>⚙️ Update Data: Operational Excellence</h2>", unsafe_allow_html=True)
+    st.info("Please enter your daily productivity records and innovation reports.")
 
     st.markdown("""
         <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #39B8FF; margin-bottom: 20px;'>
-            <strong>Nama Pegawai:</strong> Dr. Portal (Log Masuk Semasa)<br>
-            <strong>Jabatan:</strong> Pesakit Luar
+            <strong>Officer Name:</strong> Dr. Portal (Current Login)<br>
+            <strong>Department:</strong> Outpatient
         </div>
     """, unsafe_allow_html=True)
 
     tab1, tab2 = st.tabs(["⏱️ Productivity & Efficiency", "💡 Innovation & Problem Solving"])
 
     with tab1:
-        st.markdown("### Log Produktiviti & Kecekapan")
+        st.markdown("### Productivity & Efficiency Log")
         with st.form("form_ops_prod", clear_on_submit=True):
-            tarikh_kerja = st.date_input("Tarikh Semakan")
+            tarikh_kerja = st.date_input("Review Date")
             c1, c2 = st.columns(2)
-            pesakit_dilihat = c1.number_input("Jumlah Pesakit Dilihat Hari Ini", min_value=0, step=1)
-            discaj_dibuat = c2.number_input("Jumlah Discaj Diuruskan", min_value=0, step=1)
-            masa_rata = st.number_input("Purata Masa Konsultasi (Minit)", min_value=0, step=1)
+            pesakit_dilihat = c1.number_input("Total Patients Seen Today", min_value=0, step=1)
+            discaj_dibuat = c2.number_input("Total Discharges Managed", min_value=0, step=1)
+            masa_rata = st.number_input("Average Consultation Time (Minutes)", min_value=0, step=1)
             
-            if st.form_submit_button("Hantar Log Produktiviti", type="primary", use_container_width=True):
-                st.success("✅ Data produktiviti berjaya direkodkan.")
+            if st.form_submit_button("Submit Productivity Log", type="primary", use_container_width=True):
+                st.success("✅ Productivity data successfully recorded.")
 
     with tab2:
-        st.markdown("### Cadangan Inovasi & Penyelesaian Masalah")
+        st.markdown("### Innovation & Problem Solving Proposal")
         with st.form("form_ops_innov", clear_on_submit=True):
-            isu = st.text_input("Isu/Masalah Operasi yang Dikenal Pasti")
-            solusi = st.text_area("Cadangan Solusi / Inovasi yang Dilaksanakan")
+            isu = st.text_input("Operational Issue/Problem Identified")
+            solusi = st.text_area("Proposed Solution / Innovation Implemented")
             
-            if st.form_submit_button("Hantar Cadangan Inovasi", type="primary", use_container_width=True):
+            if st.form_submit_button("Submit Innovation Proposal", type="primary", use_container_width=True):
                 if isu == "":
-                    st.error("Sila masukkan isu/masalah.")
+                    st.error("Please enter the issue/problem.")
                 else:
-                    st.success("✅ Idea inovasi anda telah dihantar ke sistem untuk penilaian.")
+                    st.success("✅ Your innovation idea has been submitted to the system for evaluation.")
 
 # =====================================================================
-# --- FUNGSI BORANG INTERPERSONAL KHAS UNTUK STAF ---
+# --- STAFF SPECIFIC INTERPERSONAL FORM FUNCTION ---
 # =====================================================================
 def show_staff_interpersonal_update():
-    st.markdown("<h2 style='color:#2b3674;'>🤝 Kemas Kini Data: Interpersonal Excellence</h2>", unsafe_allow_html=True)
-    st.info("Sila rekodkan maklum balas pesakit, pengurusan emosi, kerja berpasukan, dan sesi mentorship.")
+    st.markdown("<h2 style='color:#2b3674;'>🤝 Update Data: Interpersonal Excellence</h2>", unsafe_allow_html=True)
+    st.info("Please record patient feedback, emotional management, teamwork, and mentorship sessions.")
 
     st.markdown("""
         <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #05CD99; margin-bottom: 20px;'>
-            <strong>Nama Pegawai:</strong> Dr. Portal (Log Masuk Semasa)<br>
-            <strong>Jabatan:</strong> Pesakit Luar
+            <strong>Officer Name:</strong> Dr. Portal (Current Login)<br>
+            <strong>Department:</strong> Outpatient
         </div>
     """, unsafe_allow_html=True)
 
     tab1, tab2, tab3, tab4 = st.tabs(["😊 Patient Experience", "🧠 Emotional Intel.", "👥 Teamwork", "🎓 Mentorship"])
 
     with tab1:
-        st.markdown("### Maklum Balas Pesakit")
+        st.markdown("### Patient Feedback")
         with st.form("form_int_px", clear_on_submit=True):
             c1, c2 = st.columns(2)
-            pujian = c1.number_input("Bilangan Pujian/Penghargaan Diterima", min_value=0, step=1)
-            aduan = c2.number_input("Bilangan Aduan/Teguran Diterima", min_value=0, step=1)
-            catatan = st.text_area("Ringkasan Maklum Balas Pesakit / Tindakan Diambil")
+            pujian = c1.number_input("Number of Compliments/Appreciations Received", min_value=0, step=1)
+            aduan = c2.number_input("Number of Complaints/Reprimands Received", min_value=0, step=1)
+            catatan = st.text_area("Summary of Patient Feedback / Action Taken")
             
-            if st.form_submit_button("Simpan Rekod Patient Experience", type="primary", use_container_width=True):
-                st.success("✅ Rekod pengalaman pesakit dikemaskini.")
+            if st.form_submit_button("Save Patient Experience Record", type="primary", use_container_width=True):
+                st.success("✅ Patient experience record updated.")
                 
     with tab2:
-        st.markdown("### Kecerdasan Emosi (Self-Reflection)")
+        st.markdown("### Emotional Intelligence (Self-Reflection)")
         with st.form("form_int_ei", clear_on_submit=True):
-            refleksi = st.text_area("Refleksi Pengurusan Tekanan & Emosi Kendiri")
-            tindakan = st.text_input("Langkah Penambahbaikan (Cth: Sesi Kaunseling, Riadah)")
+            refleksi = st.text_area("Self-Reflection on Stress & Emotion Management")
+            tindakan = st.text_input("Improvement Steps (e.g.: Counseling Session, Recreation)")
             
-            if st.form_submit_button("Simpan Rekod Emotional Intel", type="primary", use_container_width=True):
-                st.success("✅ Log refleksi kecerdasan emosi berjaya direkodkan.")
+            if st.form_submit_button("Save Emotional Intel Record", type="primary", use_container_width=True):
+                st.success("✅ Emotional intelligence reflection log successfully recorded.")
 
     with tab3:
-        st.markdown("### Kerja Berpasukan & Kolaborasi (MDT)")
-        with st.form("form_int_team", clear_on_submit=True):
-            projek = st.text_input("Nama Aktiviti / Kes Mesyuarat (MDT)")
-            peranan = st.text_input("Peranan Anda dalam Pasukan")
-            jabatan_terlibat = st.multiselect("Jabatan Terlibat", ["Pakar Perubatan", "Pakar Bedah", "Farmasi", "Dietetik", "Fisioterapi", "Lain-lain"])
+        st.markdown("### Teamwork & Collaboration")
+        
+        # --- SUB-MENU UNTUK 2 VARIASI TEAMWORK ---
+        teamwork_mode = st.radio(
+            "Pilih Jenis Rekod:", 
+            ["MDT & 360° Feedback", "Teamwork Contribution Points"], 
+            horizontal=True,
+            label_visibility="collapsed"
+        )
+        
+        st.write("---")
+        
+        # ==========================================
+        # VARIASI 1: BORANG ASAL (MDT)
+        # ==========================================
+        if teamwork_mode == "MDT & 360° Feedback":
+            st.markdown("#### MDT Meeting & Collaboration Record")
+            with st.form("form_int_team", clear_on_submit=True):
+                projek = st.text_input("Activity Name / Meeting Case (MDT)")
+                peranan = st.text_input("Your Role in the Team")
+                jabatan_terlibat = st.multiselect("Departments Involved", ["Physician", "Surgeon", "Pharmacy", "Dietetics", "Physiotherapy", "Others"])
+                
+                if st.form_submit_button("Save Teamwork Record", type="primary", use_container_width=True):
+                    if not jabatan_terlibat:
+                        st.error("Please select at least one department.")
+                    else:
+                        st.success("✅ Team collaboration data successfully recorded.")
+                        
+        # ==========================================
+        # VARIASI 2: BORANG LAKARAN (CONTRIBUTION)
+        # ==========================================
+        elif teamwork_mode == "Teamwork Contribution Points":
+            st.markdown("#### Teamwork Contribution & Support")
+            st.write("Record your contributions or assistance provided to your colleagues.")
             
-            if st.form_submit_button("Simpan Rekod Teamwork", type="primary", use_container_width=True):
-                if not jabatan_terlibat:
-                    st.error("Sila pilih sekurang-kurangnya satu jabatan.")
-                else:
-                    st.success("✅ Data kerjasama pasukan berjaya direkodkan.")
+            with st.container(border=True):
+                # Form to Add Contribution Point
+                with st.form("form_int_team_add", clear_on_submit=True):
+                    # 1. Select Colleague
+                    rakan_sekerja = st.selectbox(
+                        "Colleague Name (Dr. / Officer):", 
+                        ["Dr. Ahmad Kamil", "Dr. Siti Nurhaliza", "Dr. Chong Wei", "Dr. Sarah", "Dr. Muthu"]
+                    )
+                    
+                    st.write("")
+                    st.markdown("**Select Support Provided:**")
+                    
+                    # 2. Support Categories (Based on your sketch)
+                    col_s1, col_s2, col_s3 = st.columns(3)
+                    
+                    with col_s1:
+                        gen_support = st.checkbox("General Clinical Support (+1 Point)")
+                        if gen_support:
+                            st.caption("E.g., ward round cover, answering calls.")
+                    
+                    with col_s2:
+                        proc_support = st.checkbox("Procedural Assistance (+2 Points)")
+                        if proc_support:
+                            proc_name = st.text_input("Procedure Name:", placeholder="E.g., Intubation")
+                    
+                    with col_s3:
+                        cons_support = st.checkbox("Consultation Support (+1 Point)")
+                        if cons_support:
+                            st.caption("E.g., discussing complex cases.")
+                    
+                    st.write("")
+                    
+                    # Submit Button
+                    submitted_team = st.form_submit_button("➕ Add Point", type="primary", use_container_width=True)
+                    
+                    if submitted_team:
+                        total_points = 0
+                        if gen_support: total_points += 1
+                        if proc_support: total_points += 2
+                        if cons_support: total_points += 1
+                        
+                        if total_points == 0:
+                            st.error("Please select at least one support category to add points.")
+                        elif proc_support and not proc_name:
+                            st.error("Please state the Procedure Name for Procedural Assistance.")
+                        else:
+                            st.success(f"✅ Successfully added {total_points} contribution point(s) for assisting {rakan_sekerja}.")
+                            
+            # Display Current Summary (Optional based on your sketch)
+            st.write("")
+            with st.expander("📊 My Contribution Summary (This Month)"):
+                sum_df = pd.DataFrame({
+                    "Support Category": ["General Clinical", "Procedural", "Consultation"],
+                    "Points Earned": [4, 6, 2]
+                })
+                st.dataframe(sum_df, use_container_width=True, hide_index=True)
 
     with tab4:
-        st.markdown("### Sesi Mentorship")
+        st.markdown("### Mentorship Session")
         with st.form("form_int_mentor", clear_on_submit=True):
-            peranan_m = st.radio("Peranan Anda:", ["Sebagai Mentor (Mendidik)", "Sebagai Mentee (Belajar)"], horizontal=True)
-            nama_rakan = st.text_input("Nama Rakan (Mentor/Mentee)")
-            tarikh_sesi = st.date_input("Tarikh Sesi")
-            topik = st.text_area("Topik Perbincangan / Kemahiran Diajar")
+            peranan_m = st.radio("Your Role:", ["As Mentor (Teaching)", "As Mentee (Learning)"], horizontal=True)
+            nama_rakan = st.text_input("Colleague's Name (Mentor/Mentee)")
+            tarikh_sesi = st.date_input("Session Date")
+            topik = st.text_area("Discussion Topic / Skills Taught")
             
-            if st.form_submit_button("Simpan Log Mentorship", type="primary", use_container_width=True):
-                st.success("✅ Log sesi mentorship telah disimpan.")
+            if st.form_submit_button("Save Mentorship Log", type="primary", use_container_width=True):
+                st.success("✅ Mentorship session log has been saved.")
 
 # =====================================================================
-# --- DASHBOARD UTAMA STAF ---
+# --- STAFF MAIN DASHBOARD ---
 # =====================================================================
 def show_staff_dashboard():
     if "staff_view" not in st.session_state:
         st.session_state["staff_view"] = "Dashboard"
 
-    # --- SIDEBAR KHAS UNTUK STAF ---
+    # --- STAFF SPECIFIC SIDEBAR ---
     with st.sidebar:
         st.markdown('<div class="user-avatar" style="background-color: #2ecc71; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; margin: 0 auto;">👨‍⚕️</div>', unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center;'><b>Dr. Portal</b><br>Pegawai Perubatan</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center;'><b>Dr. Portal</b><br>Medical Officer</p>", unsafe_allow_html=True)
         st.divider()
         
-        st.write("**Menu Utama**")
+        st.write("**Main Menu**")
         if st.button("🏠 Dashboard", width="stretch", type="primary" if st.session_state["staff_view"] == "Dashboard" else "secondary"):
             st.session_state["staff_view"] = "Dashboard"
             st.rerun()
@@ -243,7 +339,7 @@ def show_staff_dashboard():
             st.rerun()
             
         st.write("")
-        st.write("**Kemas Kini Data Kendiri**")
+        st.write("**Self Data Update**")
         if st.button("🩺 Clinical Excellence", width="stretch", type="primary" if st.session_state["staff_view"] == "Clinical" else "secondary"):
             st.session_state["staff_view"] = "Clinical"
             st.rerun()
@@ -258,34 +354,34 @@ def show_staff_dashboard():
         
         st.markdown("<br><br><br>", unsafe_allow_html=True)
         
-        if st.button("🚪 Log Keluar", type="primary", width="stretch"): 
+        if st.button("🚪 Logout", type="primary", width="stretch"): 
             st.session_state.clear()
             st.rerun()
 
-    # --- KANDUNGAN: MY PERFORMANCE ---
+    # --- CONTENT: MY PERFORMANCE ---
     if st.session_state["staff_view"] == "My Performance":
-        st.title("📊 Prestasi Saya (My Performance)")
-        st.markdown("<p style='color: #666; font-size: 1.1rem; margin-top: -15px;'>Ringkasan penilaian dan pencapaian kemahiran anda.</p>", unsafe_allow_html=True)
+        st.title("📊 My Performance")
+        st.markdown("<p style='color: #666; font-size: 1.1rem; margin-top: -15px;'>Summary of your evaluations and skills achievements.</p>", unsafe_allow_html=True)
         st.write("")
 
         col1, col2 = st.columns(2, gap="large")
         with col1:
             with st.container(border=True):
-                st.subheader("⭐ Ringkasan Skor")
-                st.metric(label="Clinical Excellence", value="85%", delta="Naik 2%")
-                st.metric(label="Operational Output", value="92%", delta="Naik 5%")
-                st.metric(label="Interpersonal Rating", value="Tinggi", delta="Kekal")
+                st.subheader("⭐ Score Summary")
+                st.metric(label="Clinical Excellence", value="85%", delta="Up 2%")
+                st.metric(label="Operational Output", value="92%", delta="Up 5%")
+                st.metric(label="Interpersonal Rating", value="High", delta="Unchanged")
         
         with col2:
             with st.container(border=True):
-                st.subheader("📈 Kemajuan CUSUM")
-                st.info("Berdasarkan 20 prosedur terakhir, kemahiran anda konsisten dan stabil.")
-                st.progress(85, text="Konsistensi Pemerhatian Prosedur (85%)")
+                st.subheader("📈 CUSUM Progress")
+                st.info("Based on the last 20 procedures, your skills are consistent and stable.")
+                st.progress(85, text="Procedure Observation Consistency (85%)")
                 st.write("---")
-                st.caption("Pematuhan Polisi & Protokol")
-                st.progress(95, text="Kadar Pematuhan (95%)")
+                st.caption("Policy & Protocol Compliance")
+                st.progress(95, text="Compliance Rate (95%)")
 
-    # --- KANDUNGAN: MODUL PENGISIAN DATA STAF ---
+    # --- CONTENT: STAFF DATA ENTRY MODULES ---
     elif st.session_state["staff_view"] == "Clinical":
         show_staff_clinical_update()
 
@@ -295,54 +391,54 @@ def show_staff_dashboard():
     elif st.session_state["staff_view"] == "Interpersonal":
         show_staff_interpersonal_update()
 
-    # --- KANDUNGAN: DASHBOARD UTAMA STAF ---
+    # --- CONTENT: STAFF MAIN DASHBOARD ---
     else:
-        st.title("🩺 Dashboard Pegawai Perubatan")
-        st.markdown("<p style='color: #666; font-size: 1.1rem; margin-top: -15px;'>Ringkasan Tugasan, Jadual & Analisis Harian</p>", unsafe_allow_html=True)
+        st.title("🩺 Medical Officer Dashboard")
+        st.markdown("<p style='color: #666; font-size: 1.1rem; margin-top: -15px;'>Summary of Tasks, Schedule & Daily Analysis</p>", unsafe_allow_html=True)
         st.write("")
 
         col_cal, col_msg = st.columns([1, 1], gap="large")
 
         with col_cal:
             with st.container(border=True):
-                st.markdown("#### 📅 Jadual Hari Ini")
-                st.caption(f"Tarikh Semasa: {date.today().strftime('%d %B %Y')}")
-                st.info("**10:30 - 11:30 AM** | 🛏️ Grand Rounds (Wad Umum)")
-                st.success("**13:30 - 13:45 PM** | 🩺 Pemeriksaan Pesakit Baru (Klinik)")
-                st.warning("**14:00 - 14:30 PM** | 💉 Prosedur LMP (Bilik Rawatan)")
+                st.markdown("#### 📅 Today's Schedule")
+                st.caption(f"Current Date: {date.today().strftime('%d %B %Y')}")
+                st.info("**10:30 - 11:30 AM** | 🛏️ Grand Rounds (General Ward)")
+                st.success("**13:30 - 13:45 PM** | 🩺 New Patient Examination (Clinic)")
+                st.warning("**14:00 - 14:30 PM** | 💉 LMP Procedure (Treatment Room)")
 
         with col_msg:
             with st.container(border=True):
-                st.markdown("#### 💬 Mesej & Notifikasi")
-                st.caption("Peti masuk utama anda")
+                st.markdown("#### 💬 Messages & Notifications")
+                st.caption("Your primary inbox")
                 st.markdown("""
-                **🏥 Makmal Hospital Utama** <span style='color:gray; font-size:0.8em; float:right;'>14:03</span><br>
-                <small>Keputusan makmal pesakit A telah sedia untuk disemak.</small>
+                **🏥 Main Hospital Lab** <span style='color:gray; font-size:0.8em; float:right;'>14:03</span><br>
+                <small>Lab results for Patient A are ready for review.</small>
                 <hr style="margin:0.5em 0;">
                 **👩‍🔬 Dr. Siti Nurhaliza** <span style='color:gray; font-size:0.8em; float:right;'>13:27</span><br>
-                <small>Rujukan pesakit X dilampirkan. Boleh kita bincang sebentar?</small>
+                <small>Patient X referral attached. Can we discuss briefly?</small>
                 <hr style="margin:0.5em 0;">
                 **👨‍⚕️ Dr. Ahmad Kamil** <span style='color:gray; font-size:0.8em; float:right;'>08:12</span><br>
-                <small>RE: Pertukaran syif hujung minggu ini. Saya setuju.</small>
+                <small>RE: Shift swap this weekend. I agree.</small>
                 """, unsafe_allow_html=True)
 
         st.write("")
 
         with st.container(border=True):
-            st.markdown("#### 📈 Analisis Klinikal")
+            st.markdown("#### 📈 Clinical Analysis")
             col_chart, col_metrics = st.columns([1.5, 1], gap="large")
             
             with col_chart:
                 df_chart = pd.DataFrame({
-                    "Jabatan": ["ICU", "Med/Surg", "ED", "Wad Kanak-Kanak"],
-                    "Kes Selesai": [12, 10, 6, 8],
-                    "Kes Aktif": [6, 4, 2, 3]
+                    "Department": ["ICU", "Med/Surg", "ED", "Pediatric Ward"],
+                    "Completed Cases": [12, 10, 6, 8],
+                    "Active Cases": [6, 4, 2, 3]
                 })
                 fig = px.bar(
-                    df_chart, x="Jabatan", y=["Kes Selesai", "Kes Aktif"], 
+                    df_chart, x="Department", y=["Completed Cases", "Active Cases"], 
                     barmode="stack", color_discrete_sequence=["#2ea78e", "#e0e0e0"] 
                 )
-                fig.update_layout(margin=dict(t=20, l=0, r=0, b=0), height=300, legend_title_text="Status Kes")
+                fig.update_layout(margin=dict(t=20, l=0, r=0, b=0), height=300, legend_title_text="Case Status")
                 st.plotly_chart(fig, use_container_width=True)
 
             with col_metrics:
@@ -350,8 +446,8 @@ def show_staff_dashboard():
                 with m1:
                     with st.container(border=True):
                         st.markdown("**Inpatient LOS**")
-                        st.metric("ICU", "3.4 Hari")
-                        st.metric("Med/Surg", "2.2 Hari")
+                        st.metric("ICU", "3.4 Days")
+                        st.metric("Med/Surg", "2.2 Days")
                 with m2:
                     with st.container(border=True):
                         st.markdown("**Risk & Quality**")
@@ -361,14 +457,14 @@ def show_staff_dashboard():
                 m3, m4 = st.columns(2)
                 with m3:
                     with st.container(border=True):
-                        st.markdown("**Kehadiran**")
-                        st.metric("Hadir", "94%")
+                        st.markdown("**Attendance**")
+                        st.metric("Present", "94%")
                 with m4:
                     with st.container(border=True):
-                        st.markdown("**Prosedur**")
-                        st.metric("Selesai", "18/20")
+                        st.markdown("**Procedures**")
+                        st.metric("Completed", "18/20")
                         
-    # --- FOOTER GLOBAL KEKAL ---
+    # --- GLOBAL FIXED FOOTER ---
     st.markdown("""
         <style>
         .custom-footer {
@@ -380,6 +476,6 @@ def show_staff_dashboard():
         .block-container { padding-bottom: 70px !important; }
         </style>
         <div class="custom-footer">
-            Hak Cipta Terpelihara © 2026 MyPrestasi HPU | Fasiliti Kesihatan Negara
+            Copyright © 2026 MyPrestasi HPU | National Health Facility
         </div>
     """, unsafe_allow_html=True)

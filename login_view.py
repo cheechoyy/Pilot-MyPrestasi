@@ -111,7 +111,7 @@ def show_login_page():
         st.markdown('<h2 style="color:#1E293B; margin-top:10px; margin-bottom: 20px;">Login</h2>', unsafe_allow_html=True)
         
         # Ditukar kepada radio button melintang untuk mimic "Admin | Staff" toggle
-        role = st.radio("Sila pilih peranan:", ["Admin", "Staff"], horizontal=True, label_visibility="collapsed")
+        role = st.radio("Please select role:", ["Admin", "Staff"], horizontal=True, label_visibility="collapsed")
         
         st.write("") # Ruang kosong
         user = st.text_input("Email", placeholder="ymaiel@mail.com")
@@ -141,6 +141,6 @@ def show_login_page():
     # Footer
     st.markdown("""
         <div class="login-footer">
-            Hak Cipta Terpelihara © 2026 MyPrestasi HPU | Unit Kesihatan Negeri Selangor
+            Copyright © 2026 MyPrestasi HPU | Selangor State Health Unit
         </div>
     """, unsafe_allow_html=True)

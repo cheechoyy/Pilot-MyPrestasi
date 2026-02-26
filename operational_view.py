@@ -1,11 +1,11 @@
 import streamlit as st
 
 def show_operational_page():
-    st.title("⚙️ Modul Penilaian: Operational Excellence")
-    st.markdown("Halaman pemantauan produktiviti dan inovasi pegawai perubatan.")
+    st.title("⚙️ Evaluation Module: Operational Excellence")
+    st.markdown("Monitoring page for medical officer productivity and innovation.")
     st.divider()
 
-    # --- 1. CSS KHUSUS (Sama seperti Clinical untuk keseragaman) ---
+    # --- 1. SPECIAL CSS (Same as Clinical for consistency) ---
     st.markdown("""
     <style>
         div[data-testid="stHorizontalBlock"] div.stButton > button {
@@ -22,10 +22,10 @@ def show_operational_page():
             font-weight: bold !important;
         }
 
-        /* Gaya untuk butang yang sedang AKTIF */
+        /* Style for ACTIVE button */
         div[data-testid="stHorizontalBlock"] div.stButton > button[kind="primary"] {
             background-color: #f0f7ff !important;
-            border: 2px solid #6c5ce7 !important; /* Warna ungu mengikut tema Operational */
+            border: 2px solid #6c5ce7 !important; /* Purple color for Operational theme */
             color: #6c5ce7 !important;
             box-shadow: 0px 4px 10px rgba(108, 92, 231, 0.1) !important;
         }
@@ -38,21 +38,26 @@ def show_operational_page():
     """, unsafe_allow_html=True)
 
     with st.container(border=True):
-        # Ambil senarai doktor dari sesi
+        # Retrieve doctor list from session
         if st.session_state.get("doctor_list") is not None:
-            doc_list = st.session_state["doctor_list"]["Nama Pegawai"].tolist()
+            # Added a failsafe to match English column names
+            try:
+                doc_list = st.session_state["doctor_list"]["Officer Name"].tolist()
+            except KeyError:
+                col_name = st.session_state["doctor_list"].columns[0]
+                doc_list = st.session_state["doctor_list"][col_name].tolist()
         else:
-            doc_list = ["Sila pilih klinik di Dashboard utama dahulu"]
+            doc_list = ["Please select a clinic on the main Dashboard first"]
             
-        selected_doc_eval = st.selectbox("Pilih Pegawai Perubatan:", doc_list, key="op_select")
-        st.write(f"Sesi Penilaian: **{selected_doc_eval}**")
+        selected_doc_eval = st.selectbox("Select Medical Officer:", doc_list, key="op_select")
+        st.write(f"Evaluation Session: **{selected_doc_eval}**")
         st.write("---")
 
-        # --- 2. LOGIK NAVIGASI KAD (2 Kategori) ---
+        # --- 2. CARD NAVIGATION LOGIC (2 Categories) ---
         if 'active_tab_op' not in st.session_state:
             st.session_state['active_tab_op'] = "Productivity"
 
-        # Kita gunakan 2 kolum sahaja supaya butang nampak besar dan jelas
+        # Using 2 columns to make buttons large and clear
         col1, col2 = st.columns(2)
         
         with col1:
@@ -67,59 +72,58 @@ def show_operational_page():
                 st.session_state['active_tab_op'] = "Innovation"
                 st.rerun()
 
-        st.write("") # Ruang kosong
+        st.write("") # Empty space
 
-        # --- 3. KANDUNGAN BERSYARAT ---
+        # --- 3. CONDITIONAL CONTENT ---
         
-        # KATEGORI 1: PRODUCTIVITY
+        # CATEGORY 1: PRODUCTIVITY
         if st.session_state['active_tab_op'] == "Productivity":
-            st.subheader("1. Produktiviti & Kecekapan")
+            st.subheader("1. Productivity & Efficiency")
             
-            # Input data objektif
-            st.number_input("Purata Kes Harian Dirawat", min_value=0, value=45, step=1)
+            # Objective data input
+            st.number_input("Average Daily Cases Treated", min_value=0, value=45, step=1)
             
-            # --- IDEA BAHARU: Metrik Kecekapan ---
+            # --- NEW IDEA: Efficiency Metrics ---
             with st.container(border=True):
-                st.markdown("#### ⏱️ Metrik Kecekapan")
+                st.markdown("#### ⏱️ Efficiency Metrics")
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.slider("Kesesuaian Penggunaan Sumber (Resource)", 0, 100, 85, help="Kecekapan penggunaan ubat/lab")
+                    st.slider("Appropriateness of Resource Utilization", 0, 100, 85, help="Efficiency in medication/lab usage")
                 with c2:
-                    st.slider("Pusing Ganti Kes (TAT)", 0, 100, 90, help="Kepatuhan masa standard rawatan")
+                    st.slider("Case Turnaround Time (TAT)", 0, 100, 90, help="Compliance with standard treatment time")
                 
-                st.button("Simpan Skor Produktiviti", type="primary", key="save_prod_new")
+                st.button("Save Productivity Score", type="primary", key="save_prod_new")
             
-        # KATEGORI 2: INNOVATION
-        # KATEGORI 2: INNOVATION
+        # CATEGORY 2: INNOVATION
         elif st.session_state['active_tab_op'] == "Innovation":
-            st.subheader("2. Inovasi & Penyelesaian Masalah")
+            st.subheader("2. Innovation & Problem Solving")
             
-            # --- IDEA BAHARU: Pencapaian Inovatif ---
+            # --- NEW IDEA: Innovative Achievements ---
             with st.container(border=True):
-                st.markdown("#### 💡 Pencapaian Inovatif")
-                st.radio("Penglibatan Projek Inovasi (QA/QI/KIK)", ["Tiada", "Ahli", "Ketua Projek"], horizontal=True)
-                st.multiselect("Sumbangan Dokumentasi", ["Update SOP", "Protocol Baru", "Flowchart Baru"], default=[])
-                st.text_area("Huraian Ringkas Inovasi", placeholder="Contoh: Mempercepatkan proses pendaftaran di ED sebanyak 10% melalui sistem QR.")
+                st.markdown("#### 💡 Innovative Achievements")
+                st.radio("Innovation Project Involvement (QA/QI/KIK)", ["None", "Member", "Project Leader"], horizontal=True)
+                st.multiselect("Documentation Contribution", ["Update SOP", "New Protocol", "New Flowchart"], default=[])
+                st.text_area("Brief Description of Innovation", placeholder="Example: Accelerated ED registration process by 10% via QR system.")
                 
-                st.button("Simpan Skor Inovasi", type="primary", key="save_inov_new")
+                st.button("Save Innovation Score", type="primary", key="save_inov_new")
                 
-            # --- RINGKASAN SKOR AKHIR (WEIGHTAGE) ---
+        # --- OVERALL SCORE SUMMARY (WEIGHTAGE) ---
         st.write("---")
-        st.subheader("🎯 Keputusan Operational Keseluruhan")
+        st.subheader("🎯 Overall Operational Results")
         
-        # Simulasi pengiraan (Ambil daripada session_state yang kita set di Admin)
+        # Simulation calculation (Pull from session_state set in Admin)
         w_p = st.session_state.get("w_prod", 70) / 100
         w_i = st.session_state.get("w_inov", 30) / 100
         
-        # Contoh skor (Dalam sistem sebenar, tarik dari database)
+        # Example score (In actual system, pull from database)
         final_score = (85 * w_p) + (60 * w_i)
         
         col_res1, col_res2 = st.columns([2, 1])
         with col_res1:
-            st.info(f"**Markah Akhir Operational: {final_score:.1f}%**")
+            st.info(f"**Final Operational Score: {final_score:.1f}%**")
             st.caption(f"Formula: (Productivity × {w_p}) + (Innovation × {w_i})")
         with col_res2:
             if final_score >= 80:
-                st.success("✨ Cemerlang")
+                st.success("✨ Outstanding")
             else:
-                st.warning("📈 Perlukan Peningkatan")
+                st.warning("📈 Needs Improvement")
