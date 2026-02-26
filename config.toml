@@ -1,0 +1,15 @@
+[theme]
+# Warna Biru Utama KKM (Digunakan untuk butang utama, slider, dan elemen aktif)
+primaryColor = "#1E3A8A"
+
+# Latar Belakang Utama Aplikasi (Kelabu sangat lembut untuk kurangkan silau)
+backgroundColor = "#F4F7FE"
+
+# Latar Belakang Kedua (Digunakan untuk Sidebar dan kotak input - Putih Bersih)
+secondaryBackgroundColor = "#FFFFFF"
+
+# Warna Teks Utama (Kelabu Gelap, lebih selesa dibaca berbanding hitam legam)
+textColor = "#334155"
+
+# Jenis Tulisan (Font moden dan bersih)
+font = "sans serif"
