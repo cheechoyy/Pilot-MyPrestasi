@@ -31,36 +31,65 @@ STATE_CENTERS = {
     "Terengganu": {"lat": 4.9081, "lon": 103.0044, "zoom": 8}
 }
 
-MOCK_KLINIK = [
-    # Selangor & KL
-    {"name": "KK Seksyen 7 Shah Alam", "lat": 3.0738, "lon": 101.5183, "state": "Selangor"},
-    {"name": "Hospital Tengku Ampuan Rahimah", "lat": 3.0401, "lon": 101.4449, "state": "Selangor"},
-    {"name": "Hospital Serdang", "lat": 2.9760, "lon": 101.7180, "state": "Selangor"},
-    {"name": "KK Kajang", "lat": 2.9935, "lon": 101.7876, "state": "Selangor"},
-    {"name": "Hospital Kuala Lumpur (HKL)", "lat": 3.1706, "lon": 101.7011, "state": "Kuala Lumpur"},
-    {"name": "KK Jinjang", "lat": 3.2100, "lon": 101.6588, "state": "Kuala Lumpur"},
-    # Johor
-    {"name": "Hospital Sultanah Aminah", "lat": 1.4585, "lon": 103.7460, "state": "Johor"},
-    {"name": "KK Mahmoodiah", "lat": 1.4550, "lon": 103.7400, "state": "Johor"},
-    # Perak & Penang
-    {"name": "Hospital Raja Permaisuri Bainun", "lat": 4.6033, "lon": 101.0905, "state": "Perak"},
-    {"name": "Hospital Pulau Pinang", "lat": 5.4172, "lon": 100.3117, "state": "Pulau Pinang"},
-    # Melaka & Negeri Sembilan
-    {"name": "Hospital Melaka", "lat": 2.2223, "lon": 102.2592, "state": "Melaka"},
-    {"name": "Hospital Tuanku Ja'afar", "lat": 2.7106, "lon": 101.9463, "state": "Negeri Sembilan"},
-    # Pantai Timur
-    {"name": "Hospital Tengku Ampuan Afzan", "lat": 3.8055, "lon": 103.3235, "state": "Pahang"},
-    {"name": "Hospital Sultanah Nur Zahirah", "lat": 5.3250, "lon": 103.1504, "state": "Terengganu"},
-    {"name": "Hospital Raja Perempuan Zainab II", "lat": 6.1246, "lon": 102.2458, "state": "Kelantan"},
-    # Utara
-    {"name": "Hospital Sultanah Bahiyah", "lat": 6.1498, "lon": 100.4068, "state": "Kedah"},
-    {"name": "Hospital Tuanku Fauziah", "lat": 6.4414, "lon": 100.1916, "state": "Perlis"},
-    # Borneo & WP
-    {"name": "Hospital Queen Elizabeth", "lat": 5.9759, "lon": 116.0716, "state": "Sabah"},
-    {"name": "Hospital Umum Sarawak", "lat": 1.5323, "lon": 110.3409, "state": "Sarawak"},
-    {"name": "Hospital Putrajaya", "lat": 2.9293, "lon": 101.6742, "state": "Putrajaya"},
-    {"name": "Hospital Labuan", "lat": 5.2830, "lon": 115.2494, "state": "Labuan"}
-]
+# --- 1. MOCK LOCAL DATA & CSV DATA ---
+STATE_CENTERS = {
+    "All States": {"lat": 4.2105, "lon": 101.9758, "zoom": 6},
+    "Johor": {"lat": 2.0301, "lon": 103.3185, "zoom": 8},
+    "Kedah": {"lat": 6.1184, "lon": 100.3685, "zoom": 9},
+    "Kelantan": {"lat": 5.3117, "lon": 102.2125, "zoom": 8},
+    "Kuala Lumpur": {"lat": 3.1390, "lon": 101.6869, "zoom": 11},
+    "Labuan": {"lat": 5.2831, "lon": 115.2308, "zoom": 11},
+    "Melaka": {"lat": 2.2008, "lon": 102.2501, "zoom": 10},
+    "Negeri Sembilan": {"lat": 2.7258, "lon": 101.9424, "zoom": 9},
+    "Pahang": {"lat": 3.8126, "lon": 103.3256, "zoom": 8},
+    "Perak": {"lat": 4.5921, "lon": 101.0901, "zoom": 8},
+    "Perlis": {"lat": 6.4449, "lon": 100.2048, "zoom": 10},
+    "Pulau Pinang": {"lat": 5.4141, "lon": 100.3288, "zoom": 10},
+    "Putrajaya": {"lat": 2.9264, "lon": 101.6964, "zoom": 12},
+    "Sabah": {"lat": 5.3853, "lon": 116.8953, "zoom": 7},
+    "Sarawak": {"lat": 2.5000, "lon": 113.0000, "zoom": 6},
+    "Selangor": {"lat": 3.0738, "lon": 101.5183, "zoom": 9},
+    "Terengganu": {"lat": 4.9081, "lon": 103.0044, "zoom": 8}
+}
+
+@st.cache_data
+def load_clinic_data():
+    try:
+        # Baca fail CSV
+        df = pd.read_csv("fasilit_27022026.csv")
+        
+        # Buang fasiliti yang tiada data koordinat (latitude/longitude kosong)
+        df = df.dropna(subset=['latitude', 'longitude'])
+        
+        # Fungsi untuk selaraskan nama negeri dari CSV supaya ngam dengan STATE_CENTERS
+        def get_state(row):
+            if row['negeri'] == 'WP Labuan':
+                return 'Labuan'
+            elif row['negeri'] == 'Wp Kuala Lumpur Dan Putrajaya':
+                if pd.notna(row['daerah']) and 'Putrajaya' in str(row['daerah']):
+                    return 'Putrajaya'
+                else:
+                    return 'Kuala Lumpur'
+            return row['negeri']
+            
+        df['state'] = df.apply(get_state, axis=1)
+        
+        # Tukar dataframe kepada list of dictionaries seperti MOCK_KLINIK asal
+        clinic_list = []
+        for _, row in df.iterrows():
+            clinic_list.append({
+                "name": row['nama_fasiliti'],
+                "lat": float(row['latitude']),
+                "lon": float(row['longitude']),
+                "state": row['state']
+            })
+        return clinic_list
+    except Exception as e:
+        st.error(f"Gagal membaca fail CSV: {e}")
+        return []
+
+# Masukkan data CSV ke dalam variable MOCK_KLINIK secara dinamik
+MOCK_KLINIK = load_clinic_data()
 
 def generate_mock_doctors(clinic_name):
     # Generate random doctor data based on requested table format
@@ -124,6 +153,25 @@ def show_admin_dashboard():
     if "selected_klinik" not in st.session_state:
         st.session_state["selected_klinik"] = None
 
+    # --- LOGIK PENGIRAAN STATISTIK DINAMIK ---
+    # 1. Bilangan Fasiliti Aktif
+    num_facilities = len(MOCK_KLINIK)
+    
+    # 2. Kira jumlah staf & purata prestasi dari semua fasiliti
+    total_staff_count = 0
+    total_scores_sum = 0
+    
+    for clinic in MOCK_KLINIK:
+        temp_df = generate_mock_doctors(clinic["name"])
+        total_staff_count += len(temp_df)
+        total_scores_sum += temp_df["Current Score"].sum()
+        
+    # 3. Purata Prestasi Keseluruhan
+    global_avg_perf = int(total_scores_sum / total_staff_count) if total_staff_count > 0 else 0
+    
+    # 4. Anggaran Penilaian Selesai (Contoh: 3 kali penilaian bagi setiap staf)
+    evals_completed = total_staff_count * 3
+
     # --- 3. SIDEBAR ---
     with st.sidebar:
         # Custom Sidebar Header dengan Logo Jata Negara & Jarak Teks yang Dirapatkan
@@ -142,29 +190,37 @@ def show_admin_dashboard():
         st.markdown("<p style='font-size:13px; font-weight:bold; color:#a3aed1; margin-bottom:10px;'>📊 OVERALL STATISTICS</p>", unsafe_allow_html=True)
         
         # --- BASE64 ICONS ---
-        ICON_HOSPITAL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAAAsTAAALEwEAmpwYAAADY0lEQVR4nO3WPUyTQRgH8KrRxOhg4uDg4uLkZFyYbHjbu7cmUlpNxWCqqbFLBZWAQFAoGmqUL8Mkg4uOEicHB2N0se97tTZVsCioFWgQ0Wrl7QcW6N/cRVBUolDKR+w/eZKmvfb5tc/dpTrd/xKvJG33mUx3fbJ8X9Hrd+hWSnpstg0KIedVSuNhl2si7HJNqpQmGSHn/Xv2rF9W3KPCwr2M0nB3SYn2xeNB6upVUWOXLuF5aanGKI0okkSWHKZI0jaV0tu+ffsSI7W1AqVdvoyQ4zhCDge0K1fEcyM1NeBrmCx38ffkHHbLZlunGo1ljBDttdM5nmhtFZDBigo8LirCQGenKP54qKJCvMbXvDpxIq0SkmCEnILbvTYnuEcGw24my93BAwfGPl+8KJp/unABwZIS9LhcSITDmE5qaAih06cRtNkQbWgQa2NNTXh68KDmo/SlajQWLBrsgV6/hVHa6aM0OXTmTCbV3o54Swv6nE74zWa8v3MHyGTwp3x8+BB+qxW9Dgfi38c+fPZsxmcyJRVKbzGDYWtWOK/ReEgl5HOv3Z6absD33BOLBf0eDyZiMfwtE5qGcEcH/MXFiFRWgX9BrbkZ/Q7HOKM05iXkGHS6NfOCKUbjTp/J5A2YzfGo2z0zom67Hc/4IQiFMN/E+/rQ7XTiWWkpZrZIYyMCVmucyXKAFRbu+vsvVlCwkVHqYZTGB8rLJ5Pt7WKTv3GdFON819WFzNQUFpxMRmyJx2Yz+p1OsVU4NFJZOckoTaiEXHug12/+M06SilRK3/ccPpzk99jMOK1WvKipwdfRUSxW0tEo+pua4LdYMFJd/eOastuTTJajXkmyzcIxk+mef//++Idz58TiL/yiPXoUwSNHEAsEkKvEAgHRg/fiPXlvbuAWbvqx5wwG8HEm29rwtqxM3GORGzcwlU4j15lKpxG5eVOM/W15uTBwCzfNAn6sr4ev2CLur+TgIJY648PD6K2uhmouxmhd3e9ARumHjio3ljsdVW5hmQ2UpOYgIZtqW64v+IMVg2FWLTTcwC3c9NtJzhaY+v5vJlvgnPdgHvgPyQNTyw389bQqP9XPwLlqSYDTkNQ8Kw9cFSNe8Ydkrih5oC4PXH6gskh.png" 
+        ICON_HOSPITAL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAAAsTAAALEwEAmpwYAAADY0lEQVR4nO3WPUyTQRgH8KrRxOhg4uDg4uLkZFyYbHjbu7cmUlpNxWCqqbFLBZWAQFAoGmqUL8Mkg4uOEicHB2N0se97tTZVsCioFWgQ0Wrl7QcW6N/cRVBUolDKR+w/eZKmvfb5tc/dpTrd/xKvJG33mUx3fbJ8X9Hrd+hWSnpstg0KIedVSuNhl2si7HJNqpQmGSHn/Xv2rF9W3KPCwr2M0nB3SYn2xeNB6upVUWOXLuF5aanGKI0okkSWHKZI0jaV0tu+ffsSI7W1AqVdvoyQ4zhCDge0K1fEcyM1NeBrmCx38ffkHHbLZlunGo1ljBDttdM5nmhtFZDBigo8LirCQGenKP54qKJCvMbXvDpxIq0SkmCEnILbvTYnuEcGw24my93BAwfGPl+8KJp/unABwZIS9LhcSITDmE5qaAih06cRtNkQbWgQa2NNTXh68KDmo/SlajQWLBrsgV6/hVHa6aM0OXTmTCbV3o54Swv6nE74zWa8v3MHyGTwp3x8+BB+qxW9Dgfi38c+fPZsxmcyJRVKbzGDYWtWOK/ReEgl5HOv3Z6absD33BOLBf0eDyZiMfwtE5qGcEcH/MXFiFRWgX9BrbkZ/Q7HOKM05iXkGHS6NfOCKUbjTp/J5A2YzfGo2z0zom67Hc/4IQiFMN/E+/rQ7XTiWWkpZrZIYyMCVmucyXKAFRbu+vsvVlCwkVHqYZTGB8rLJ5Pt7WKTv3GdFON819WFzNQUFpxMRmyJx2Yz+p1OsVU4NFJZOckoTaiEXHug12/+M06SilRK3/ccPpzk99jMOK1WvKipwdfRUSxW0tEo+pua4LdYMFJd/eOastuTTJajXkmyzcIxk+mef//++Idz58TiL/yiPXoUwSNHEAsEkKvEAgHRg/fiPXlvbuAWbvqx5wwG8HEm29rwtqxM3GORGzcwlU4j15lKpxG5eVOM/W15uTBwCzfNAn6sr4ev2CLur+TgIJY648PD6K2uhmouxmhd3e9ARumHjio3ljsdVW5hmQ2UpOYgIZtqW64v+IMVg2FWLTTcwC3c9NtJzhaY+v5vJlvgnPdgHvgPyQNTyw389bQqP9XPwLlqSYDTkNQ8Kw9cFSNe8Ydkrih5oC4PXH6gskh/t3ICXKzkgdkmD8w2qx9YuwJKt5ryDcEV7XbpakNgAAAAAElFTkSuQmCC"
         ICON_STAFF = "data:image/png;base64,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" 
         ICON_CHART = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAAAsTAAALEwEAmpwYAAABwklEQVR4nO2VP0vDQBjGTxRXBRdFd3HwM4j9AG5ZbO9N61DURQTvrooljuLg4tTe0VaoSwdFB4dgJ8GtH0CnguIgjrpaefsHamyosUmawj1wJLxJuF+e90leQrRGWKCYAMUbzkWipI3S/uFWOft5/XjbsOvV6AEaFWsyWRD3m+XsF0JGCjCu2CJIXgPJr5KFzOn2hfURKmAiL2Kg2BppkDHnNVOyNJXsDY+dWqqYyYYCaFSMcVDcopK/tB2qdUDpeWaGSn6JNXTQ+SyV7ChQOLO4N0slv8OF5wiFcF2gzyD5CWaPhK1EXsSariluoYs/LrZB8Z7AAECx1V6ZMrpaGiiAq1pvL0CxV2emTGdLw1Y6J6bwNwCSP8TzfMGZKerW0jCULIhlKvkTVezsV6h9yhT8d9RRKdZBsneQPDUIQD8hEI64zuoLuGJZE1TyY3QOHSQBC7wAQml3HrMGit2YxZ3poOE8AcZzB3PNr1Qx0Ws0RcJBKvmSHxuCh9B7zqAfgLaHDTXgXzd0a/3AgH5lCjzWQ28ZaMD6YJmCYQDaAdZ7ggTpCPgBOAwQ0IB1DdiSBlQasKoB7ZEHBJdRN4w6GRV9A4g3/DjDTM9MAAAAAElFTkSuQmCC" 
         ICON_CHECK = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEkUlEQVR4nN2YX0xbdRTHr/9988UHk71ojIkmxhdfjC8kZmNt7700urCYGTs392R0S9R1cUJKNJsRnNAIlNL7r7ARZAtbdM7R+/v1Mhg6oAwMuE7+yPgrf0ub9rZIgWN+rHEwgd62txg9yTe5uffhfO75nd85v/OjqP+zXXXmPi+76E+UGnMzlphRxNNBxNMhLDJjXolt9XAmG3IZXtpRKJvN9qDHZTyERXZMkczqr+iD2HTvKVgY+Bpi41UQm3BCcLAUpntPg997bLG5xhzGAj0lc4b3FFvOw1mF8zgNOVhghn++cCAc6D8DEKgBCNQmVXCwDDoaLREsMpOyK9eQFTiZNx3FIqtO932hCQo20Zy/GBR3nooFpkBXOCyyFa11+yLRMUfacJDQ4kQ1tNXvj3hF9hwA9YAukSNw8Wk+YzhIaHlWgp++fTOCBJMt85wTWVWPyMH9kZx0guI2qzJvZNKCa2jIfwhLzFAmOQdJNP9bCZAd3tCQ/2jKgDJnOHzj/IFwtuAgId+ldyIyZ/wwZUBS5+6WkuwChoe/AcTTC6S+aobzuEwvkHKgtc5Bhmqp2xfyVBte0b68gqngFj66uBNwEKiFgZaPl5FIn9EMSHrrVO+prMCM/F79z81yuwS87rxezYBYZEZJP9UbrrHtKzjInQDcZd/wPjJSTvIwpBkQCXSQNH694SycdU0HeSv84q/8+1t8RgAPZ4xrj6DABMipJBtwFs4Kxd99DktzNRs6i8wZlzQDKu68wdCQfUfgIFALpFNhiZ3RDiiZb8z5v9wROEgcxxTJfFsT3BW74TEkMj0TN4u2db6ZI9gGruT7zeGIZvpOAxaYAU0tDwu0o/OiJUoSdyvnzTftcKK+EAKTQkaRu7dJxMSBlq5ICoh4kxod23oHK132tVJBHFvrC2DhPshUIrcxD6tA5umwBkA6FJvYGrDnViUcFu8CWjgrHF8XyVQjt17EJxboYPIl5tmyjsa31e3qoK+vHA4J9yCt9QVQ11ycVuTW4MaroOOiRcWCqTQpoM/58iNIZEvI33RfPhLVCmlJE65Pfj9GGgPxSXxTWk127n5C5kyxpT84zZG0pAi3MisBEugoctC7NINtWG43e/5O+8mV7Zz0rMvJVHKOaLy7CBSJRVS6dtWZ++q1s6+HV+e3d+rrK4fSH1KDI2fN6+fywxnPyV6J9U32fLaq3XGtJpFZB4tsf8ajZ1O18bWWs2+EV+fcusGtztfC9br9YY9zbx6lh2GRbR1uPxnXC3DUV7iCJaZbl8GdmMex+zks0iqZZTOF+3PSRZZWbeL2vEjpaZini9ovvBVJtmEgydJ2XrJEEE8XU3obGQvJUg+0fJT2MDXUdjxONl3WruEUJ/MkuQkY7SxMOR/HumzLSKBnFdH0FJVN+9Gx92ksMlMj7QXLWuFGOj5dQQIzg52GZ7MKtwGSZ/q7L78bXpra+tYrPi1Az5UjKhKYwabqPc9QO2nk5I1FtgLxdMyvHFsMDZWtDT9E5Jm8I9+8AlOpiDmPU/+WIQe9C/FsiVdi75DJjIg8k3dpHwL+S/YX14zjyU25G48AAAAASUVORK5CYII=" 
 
         st.markdown(f"""
             <div class="sidebar-kpi">
-                <div class="sidebar-icon" style="background:#E2E8FF;"><img src="{ICON_HOSPITAL}" width="26" height="26"></div>
-                <div class="sidebar-text"><h3>21</h3><p>Active Facilities</p></div>
+                <div class="sidebar-icon" style="background:#E2E8FF;"><img src="{ICON_HOSPITAL}" width="20"></div>
+                <div class="sidebar-text">
+                    <h3>{num_facilities}</h3>  <p>Active Facilities</p>
+                </div>
             </div>
             <div class="sidebar-kpi">
-                <div class="sidebar-icon" style="background:#E6F8F3;"><img src="{ICON_STAFF}" width="26" height="26"></div>
-                <div class="sidebar-text"><h3>394</h3><p>Total Staff</p></div>
+                <div class="sidebar-icon" style="background:#E6F8F3;"><img src="{ICON_STAFF}" width="20"></div>
+                <div class="sidebar-text">
+                    <h3>{total_staff_count}</h3> <p>Total Staff</p>
+                </div>
             </div>
             <div class="sidebar-kpi">
-                <div class="sidebar-icon" style="background:#FFF2E5;"><img src="{ICON_CHART}" width="26" height="26"></div>
-                <div class="sidebar-text"><h3>82%</h3><p>Average Performance</p></div>
+                <div class="sidebar-icon" style="background:#FFF2E5;"><img src="{ICON_CHART}" width="20"></div>
+                <div class="sidebar-text">
+                    <h3>{global_avg_perf}%</h3> <p>Average Performance</p>
+                </div>
             </div>
             <div class="sidebar-kpi">
-                <div class="sidebar-icon" style="background:#FEECEF;"><img src="{ICON_CHECK}" width="26" height="26"></div>
-                <div class="sidebar-text"><h3>1,250</h3><p>Evaluations Completed</p></div>
+                <div class="sidebar-icon" style="background:#FEECEF;"><img src="{ICON_CHECK}" width="20"></div>
+                <div class="sidebar-text">
+                    <h3>{evals_completed:,}</h3> <p>Evaluations Completed</p>
+                </div>
             </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
         st.write("")
         st.markdown("<p style='font-size:13px; font-weight:bold; color:#a3aed1; margin-bottom:10px;'>⚙️ ADMINISTRATION MENU</p>", unsafe_allow_html=True)

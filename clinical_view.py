@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 
 # ADD module_type PARAMETER
 def show_clinical_page(module_type="CTS"):
-    st.title(f"⚕️ Evaluation Module: Clinical Excellence ({module_type})")
+    st.title(f"⚕️ Clinical Excellence")
     st.markdown("Dedicated page for clinical evaluation of medical officers.")
     st.divider()
 
@@ -38,18 +38,52 @@ def show_clinical_page(module_type="CTS"):
     """, unsafe_allow_html=True)
 
     with st.container(border=True):
-        # Retrieve doctor list from session
-        if st.session_state.get("doctor_list") is not None:
-            # Check if data is dataframe or list
-            if isinstance(st.session_state["doctor_list"], pd.DataFrame):
-                # Using the English column name as defined in main/admin view
-                doc_list = st.session_state["doctor_list"]["Officer Name"].tolist()
-            else:
-                doc_list = st.session_state["doctor_list"]
-        else:
-            doc_list = ["Please select a clinic on the main Dashboard first"]
+
+        # =========================================================================
+        # LOGIK BAHARU: PILIH NEGERI -> MUNCUL PEGAWAI (Data Mockup Dinamik)
+        # =========================================================================
+        mock_state_officers = {
+            "Johor": ["Dr. Ali (998)", "Dr. Muthu (104)", "Dr. Siti (205)"],
+            "Kedah": ["Dr. Hassan (112)", "Dr. Zikri (113)"],
+            "Kelantan": ["Dr. Amir (221)", "Dr. Sofea (222)"],
+            "Kuala Lumpur": ["Dr. Farhana (553)", "Dr. David (201)"],
+            "Labuan": ["Dr. John (331)"],
+            "Melaka": ["Dr. Ramesh (405)", "Dr. Kumar (406)"],
+            "Negeri Sembilan": ["Dr. Aina (501)", "Dr. Danial (502)"],
+            "Pahang": ["Dr. Fazura (601)", "Dr. Kamal (602)"],
+            "Perak": ["Dr. Chong (302)", "Dr. Wei (303)"],
+            "Perlis": ["Dr. Azim (701)"],
+            "Pulau Pinang": ["Dr. Lim (801)", "Dr. Sarah (802)"],
+            "Putrajaya": ["Dr. Aisyah (102)", "Dr. Badrul (902)"],
+            "Sabah": ["Dr. Bernard (712)", "Dr. Michael (881)"],
+            "Sarawak": ["Dr. Wong (901)", "Dr. Lina (922)"],
+            "Selangor": ["Dr. Kassim (123)", "Dr. Nabila (124)"],
+            "Terengganu": ["Dr. Osman (234)", "Dr. Liyana (235)"]
+        }
+        
+        # Susun dropdown bersebelahan
+        col_negeri, col_pegawai = st.columns(2)
+        
+        with col_negeri:
+            senarai_negeri = ["Semua Negeri"] + list(mock_state_officers.keys())
+            pilihan_negeri = st.selectbox("Pilih Negeri:", options=senarai_negeri, index=0, key=f"state_sel_{module_type}")
             
-        selected_doc_eval = st.selectbox("Select Medical Officer:", doc_list, key=f"doc_sel_{module_type}")
+        with col_pegawai:
+            if pilihan_negeri == "Semua Negeri":
+                # Gabungkan semua doktor
+                doc_list = []
+                for officers in mock_state_officers.values():
+                    doc_list.extend(officers)
+            else:
+                # Tapis doktor mengikut negeri
+                doc_list = mock_state_officers.get(pilihan_negeri, [])
+                
+            selected_doc_eval = st.selectbox("Select Medical Officer:", options=doc_list, key=f"doc_sel_{module_type}")
+            
+        if not selected_doc_eval:
+            st.warning("Tiada pegawai dijumpai.")
+            st.stop()
+
         st.write(f"Evaluation Session: **{selected_doc_eval}**")
         st.write("---")
 
